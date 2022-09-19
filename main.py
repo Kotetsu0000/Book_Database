@@ -1,6 +1,7 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
+from tkinter import filedialog
 import pandas as pd
 import requests
 import xml.etree.ElementTree as et
@@ -19,9 +20,16 @@ class Application(tk.Frame):
         self.create_widgets()
 
     def set_data(self):
-        self.data = pd.read_csv("./csv/book_data.csv", encoding="utf-8")
-        self.data = self.data.reset_index(drop=True)
         self.colname_list = ['タイトル', '著者', '出版社', '件名標目','保管場所']  # 検索結果に表示させる列名
+        self.in_colname_list = ['isbn','タイトル', '著者', '出版社', '件名標目','保管場所']  # 検索結果に表示させる列名
+        try:
+            self.data = pd.read_pickle('book_data.pkl')
+        except:
+            self.data = pd.DataFrame(None, columns=self.in_colname_list)
+            self.data.to_pickle('book_data.pkl')
+        #self.data = pd.read_csv("./csv/book_data.csv", encoding="utf-8")
+        self.data = self.data.reset_index(drop=True)
+        
         self.width_list = [200, 100, 100, 100, 50]
 
     def create_widgets(self):
@@ -90,13 +98,16 @@ class Application(tk.Frame):
         self.search_box_place.bind("<Return>", self.search_table)
 
         self.button = tk.Button(self.button_region, text=u'ISBNを入力', width=20, height=1, command=self.button_pushed)
-        self.button.pack(side = tk.TOP, pady = 5, padx = 5)#.grid(row=0, column=0, sticky=tk.W, pady = 5, padx = 5)
+        self.button.pack(side = tk.TOP, pady = 3, padx = 5)#.grid(row=0, column=0, sticky=tk.W, pady = 5, padx = 5)
+
+        self.button = tk.Button(self.button_region, text=u'CSVで保存', width=20, height=1, command=self.save_csv)
+        self.button.pack(side = tk.TOP, pady = 3, padx = 5)#.grid(row=0, column=0, sticky=tk.W, pady = 5, padx = 5)
 
         self.button = tk.Button(self.button_region, text=u'更新', width=20, height=1, command=self.search_table)
-        self.button.pack(side = tk.BOTTOM, pady = 5, padx = 5)#.grid(row=1, column=0, sticky=tk.W, pady = 5, padx = 5)
+        self.button.pack(side = tk.BOTTOM, pady = 3, padx = 5)#.grid(row=1, column=0, sticky=tk.W, pady = 5, padx = 5)
 
         self.button = tk.Button(self.button_region, text=u'選択を削除', width=20, height=1, command=self.del_data)
-        self.button.pack(side = tk.BOTTOM, pady = 5, padx = 5)#.grid(row=1, column=0, sticky=tk.W, pady = 5, padx = 5)
+        self.button.pack(side = tk.BOTTOM, pady = 3, padx = 5)#.grid(row=1, column=0, sticky=tk.W, pady = 5, padx = 5)
 
     def search_table(self, event=None):
         bool_data = [True]*len(self.data)
@@ -197,7 +208,17 @@ class Application(tk.Frame):
                     self.data = self.data.drop(del_index)
                     self.data = self.data.reset_index(drop=True)
                 self.search_table()
-                self.data.to_csv("./csv/book_data.csv", encoding="utf-8", index=False)
+                #self.data.to_csv("./csv/book_data.csv", encoding="utf-8", index=False)
+                self.data.to_pickle('book_data.pkl')
+
+    def save_csv(self, event=None):
+        filename = filedialog.asksaveasfilename(
+            title = "名前を付けて保存",
+            filetypes = [("CSV", ".csv") ], # ファイルフィルタ
+            initialdir = "./", # 自分自身のディレクトリ
+            defaultextension = "csv"
+            )
+        self.data.to_csv(filename, encoding="utf-8", index=False)
 
     def onDuble(self, event):
         if len(self.table.selection())!=1:
@@ -325,7 +346,8 @@ class input_isbn(tk.Frame):
                 ret_info = messagebox.askyesno('追加確認', '追加しますか？\nISBN : '+isbn+'\nタイトル : '+title+'\n著者 : '+creator+'\n出版社 : '+publisher+'\n件名標目 : '+subject)
                 if ret_info:
                     self.data = self.data.append({'isbn': isbn, 'タイトル': title, '著者': creator, '出版社': publisher, '件名標目': subject}, ignore_index=True)
-                    self.data.to_csv("./csv/book_data.csv", encoding="utf-8", index=False)
+                    #self.data.to_csv("./csv/book_data.csv", encoding="utf-8", index=False)
+                    self.data.to_pickle('book_data.pkl')
                     self.search_str_isbn.set('')
             else:
                 messagebox.showerror('登録失敗', '入力されたISBNコードと一致する本が存在ません。')
@@ -383,3 +405,4 @@ if __name__ == "__main__":
     #root.resizable(width=False, height=False)
     app = Application(master=root)
     app.mainloop()
+#nuitka --mingw64 --follow-imports --onefile --enable-plugin=tk-inter --windows-disable-console --windows-icon-from-ico=favicon.ico --enable-plugin=numpy main.py
