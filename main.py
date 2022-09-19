@@ -11,11 +11,9 @@ class Application(tk.Frame):
         tk.Frame.__init__(self, master)
         self.pack(expand=1, fill=tk.BOTH, anchor=tk.NW)
         self.master = master
-        self.camera_list = None#check_camera_connection(3)
+        self.camera_list = None
         self.camera_window = None
         self.get_camera = None
-
-        #self.master.protocol("WM_DELETE_WINDOW", self.delete_self_window)
         self.set_data()
         self.create_widgets()
 
@@ -27,7 +25,6 @@ class Application(tk.Frame):
         except:
             self.data = pd.DataFrame(None, columns=self.in_colname_list)
             self.data.to_pickle('book_data.pkl')
-        #self.data = pd.read_csv("./csv/book_data.csv", encoding="utf-8")
         self.data = self.data.reset_index(drop=True)
         
         self.width_list = [200, 100, 100, 100, 50]
@@ -63,51 +60,51 @@ class Application(tk.Frame):
         in_frame.pack(expand=True,fill=tk.BOTH, side="left")
 
         self.label_title = ttk.Label(name_frame, text='タイトル')
-        self.label_title.pack(side="top",pady=3)#.grid(row=0, column=0, sticky=tk.W)
+        self.label_title.pack(side="top",pady=3)
         self.search_str_title = tk.StringVar()
         self.search_box_title = ttk.Entry(in_frame, justify="left",textvariable=self.search_str_title)
-        self.search_box_title.pack(fill=tk.X, side="top", padx=2, pady=2)#.grid(row=0, column=1, padx=2, pady=2)
+        self.search_box_title.pack(fill=tk.X, side="top", padx=2, pady=2)
         self.search_box_title.bind("<Return>", self.search_table)
 
         self.label_auther = ttk.Label(name_frame, text='著者')
-        self.label_auther.pack(side="top",pady=3)#.grid(row=1, column=0, sticky=tk.W)
+        self.label_auther.pack(side="top",pady=3)
         self.search_str_auther = tk.StringVar()
         self.search_box_auther = ttk.Entry(in_frame, justify="left",textvariable=self.search_str_auther)
-        self.search_box_auther.pack(fill=tk.X, side="top", padx=2, pady=2)#.grid(row=1, column=1, padx=2, pady=2, sticky='nsew')
+        self.search_box_auther.pack(fill=tk.X, side="top", padx=2, pady=2)
         self.search_box_auther.bind("<Return>", self.search_table)
 
         self.label_publisher = ttk.Label(name_frame, text='出版社')
-        self.label_publisher.pack(side="top",pady=3)#.grid(row=2, column=0,sticky=tk.W)
+        self.label_publisher.pack(side="top",pady=3)
         self.search_str_publisher = tk.StringVar()
         self.search_box_publisher = ttk.Entry(in_frame, justify="left",textvariable=self.search_str_publisher)
-        self.search_box_publisher.pack(fill=tk.X, side="top", padx=2, pady=2)#.grid(row=2, column=1, padx=2, pady=2, sticky='nsew')
+        self.search_box_publisher.pack(fill=tk.X, side="top", padx=2, pady=2)
         self.search_box_publisher.bind("<Return>", self.search_table)
 
         self.label_subject = ttk.Label(name_frame, text='件名標目')
-        self.label_subject.pack(side="top",pady=3)#.grid(row=3, column=0,sticky=tk.W)
+        self.label_subject.pack(side="top",pady=3)
         self.search_str_subject = tk.StringVar()
         self.search_box_subject = ttk.Entry(in_frame, justify="left",textvariable=self.search_str_subject)
-        self.search_box_subject.pack(fill=tk.X, side="top", padx=2, pady=2)#.grid(row=3, column=1, padx=2, pady=2, sticky='nsew')
+        self.search_box_subject.pack(fill=tk.X, side="top", padx=2, pady=2)
         self.search_box_subject.bind("<Return>", self.search_table)
 
         self.label_place = ttk.Label(name_frame, text='保管場所')
-        self.label_place.pack(side="top",pady=3)#.grid(row=3, column=0,sticky=tk.W)
+        self.label_place.pack(side="top",pady=3)
         self.search_str_place = tk.StringVar()
         self.search_box_place = ttk.Entry(in_frame, justify="left",textvariable=self.search_str_place)
-        self.search_box_place.pack(fill=tk.X, side="top", padx=2, pady=2)#.grid(row=3, column=1, padx=2, pady=2, sticky='nsew')
+        self.search_box_place.pack(fill=tk.X, side="top", padx=2, pady=2)
         self.search_box_place.bind("<Return>", self.search_table)
 
         self.button = tk.Button(self.button_region, text=u'ISBNを入力', width=20, height=1, command=self.button_pushed)
-        self.button.pack(side = tk.TOP, pady = 3, padx = 5)#.grid(row=0, column=0, sticky=tk.W, pady = 5, padx = 5)
+        self.button.pack(side = tk.TOP, pady = 3, padx = 5)
 
         self.button = tk.Button(self.button_region, text=u'CSVで保存', width=20, height=1, command=self.save_csv)
-        self.button.pack(side = tk.TOP, pady = 3, padx = 5)#.grid(row=0, column=0, sticky=tk.W, pady = 5, padx = 5)
+        self.button.pack(side = tk.TOP, pady = 3, padx = 5)
 
         self.button = tk.Button(self.button_region, text=u'更新', width=20, height=1, command=self.search_table)
-        self.button.pack(side = tk.BOTTOM, pady = 3, padx = 5)#.grid(row=1, column=0, sticky=tk.W, pady = 5, padx = 5)
+        self.button.pack(side = tk.BOTTOM, pady = 3, padx = 5)
 
         self.button = tk.Button(self.button_region, text=u'選択を削除', width=20, height=1, command=self.del_data)
-        self.button.pack(side = tk.BOTTOM, pady = 3, padx = 5)#.grid(row=1, column=0, sticky=tk.W, pady = 5, padx = 5)
+        self.button.pack(side = tk.BOTTOM, pady = 3, padx = 5)
 
     def search_table(self, event=None):
         bool_data = [True]*len(self.data)
@@ -134,7 +131,6 @@ class Application(tk.Frame):
         self.result_text = tk.StringVar()
         len_result = ttk.Label(self.search_num_region, textvariable=self.result_text)
         self.search_num_region.add(len_result)
-        #self.result_text.set(f"検索結果：{len(self.camera_list)}")
         
         table_frame = tk.Frame(self.table_region)
         table_frame.pack(expand=True,fill=tk.BOTH, side="left")
@@ -233,7 +229,6 @@ class Application(tk.Frame):
             windw_h = 225
             root.title("項目の編集")
             root.geometry(str(windw_w)+"x"+str(windw_h)+"+"+str((w-windw_w)//2)+"+"+str((h-windw_h)//2))
-            #root.geometry("480x300")
             root.protocol("WM_DELETE_WINDOW", self.no_mvoe)
             root.grab_set()
             root.resizable(width=False, height=False)
@@ -258,8 +253,6 @@ class change_data(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        #isbn,タイトル,著者,出版社,件名標目
-        #isbn, title, creator, publisher, subject
         self.label_isbn = tk.Label(self, text=u'ISBN')
         self.label_isbn.grid(row=0, column=0)
         self.str_isbn = tk.StringVar()
@@ -305,9 +298,6 @@ class change_data(tk.Frame):
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(2, weight=1)
 
-        #self.button = tk.Button(self, text=u'OK', command=self.change_table_element)
-        #self.button.grid(row=5, column=0, pady = 5, padx = 5, sticky=tk.EW)
-
         self.button = tk.Button(self, text=u'OK', command=self.change_table_element)
         self.button.grid(row=6, column=1, pady = 5, padx = 5, sticky=tk.EW)
 
@@ -346,7 +336,6 @@ class input_isbn(tk.Frame):
                 ret_info = messagebox.askyesno('追加確認', '追加しますか？\nISBN : '+isbn+'\nタイトル : '+title+'\n著者 : '+creator+'\n出版社 : '+publisher+'\n件名標目 : '+subject)
                 if ret_info:
                     self.data = self.data.append({'isbn': isbn, 'タイトル': title, '著者': creator, '出版社': publisher, '件名標目': subject}, ignore_index=True)
-                    #self.data.to_csv("./csv/book_data.csv", encoding="utf-8", index=False)
                     self.data.to_pickle('book_data.pkl')
                     self.search_str_isbn.set('')
             else:
@@ -402,7 +391,5 @@ if __name__ == "__main__":
     iconfile = 'icon.ico'
     root.iconbitmap(default=iconfile)
     root.geometry(str(windw_w)+"x"+str(windw_h)+"+"+str((w-windw_w)//2)+"+"+str((h-windw_h)//2))
-    #root.resizable(width=False, height=False)
     app = Application(master=root)
     app.mainloop()
-#nuitka --mingw64 --follow-imports --onefile --enable-plugin=tk-inter --windows-disable-console --windows-icon-from-ico=favicon.ico --enable-plugin=numpy main.py
