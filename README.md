@@ -6,7 +6,7 @@
 
 exeファイルを実行すると以下のような画面になります。
 
-![image01.png](F:\Program\GitHub\Book_Database\images\image01.png)
+![image01.png](./images/image01.png)
 
 ### 検索
 
@@ -20,6 +20,6 @@ CSVで保存ボタンを押すと名前を付けて保存の画面が出るの�
 
 ISBNを入力ボタンを押すと以下のようなウィンドウ画面が表示されます。
 
-![image02.png](F:\Program\GitHub\Book_Database\images\image02.png)
+![image02.png](./images/image02.png)
 
 ここにISBNコードを入力し、エンターキーまたは検索ボタンを押すと登録確認画面が出るので、問題なければOKを押すことで追加されます。
