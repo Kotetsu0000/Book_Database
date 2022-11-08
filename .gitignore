@@ -4,3 +4,5 @@ main.dist/**
 main.onefile-build/**
 main.exe
 cmmand.txt
+book_data.csv
+book_data.pkl

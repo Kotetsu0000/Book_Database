@@ -5,6 +5,7 @@ from tkinter import filedialog
 import pandas as pd
 import requests
 import xml.etree.ElementTree as et
+import json
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -21,10 +22,10 @@ class Application(tk.Frame):
         self.colname_list = ['タイトル', '著者', '出版社', '件名標目','保管場所']  # 検索結果に表示させる列名
         self.in_colname_list = ['isbn','タイトル', '著者', '出版社', '件名標目','保管場所']  # 検索結果に表示させる列名
         try:
-            self.data = pd.read_pickle('book_data.pkl')
+            self.data = pd.read_csv('book_data.csv')
         except:
             self.data = pd.DataFrame(None, columns=self.in_colname_list)
-            self.data.to_pickle('book_data.pkl')
+            self.data.to_csv('book_data.csv', encoding="utf-8", index=False)
         self.data = self.data.reset_index(drop=True)
         
         self.width_list = [200, 100, 100, 100, 50]
@@ -205,7 +206,7 @@ class Application(tk.Frame):
                     self.data = self.data.reset_index(drop=True)
                 self.search_table()
                 #self.data.to_csv("./csv/book_data.csv", encoding="utf-8", index=False)
-                self.data.to_pickle('book_data.pkl')
+                self.data.to_csv('book_data.csv', encoding="utf-8", index=False)
 
     def save_csv(self, event=None):
         filename = filedialog.asksaveasfilename(
@@ -236,7 +237,7 @@ class Application(tk.Frame):
             
     def get_index(self,table_list):
         title, creator, publisher, subject, Place = table_list
-        return list(self.data[((self.data['タイトル']==title)|(self.data['タイトル'].isna())) & ((self.data['著者']==creator) | (self.data['著者'].isna())) & ((self.data['出版社']==publisher)|(self.data['出版社'].isna())) & ((self.data['件名標目']==subject)|(self.data['件名標目'].isna())) & ((self.data['保管場所']==subject)|(self.data['保管場所'].isna()))].index)[0]
+        return list(self.data[((self.data['タイトル']==title)|(self.data['タイトル'].isna())) & ((self.data['著者']==creator) | (self.data['著者'].isna())) & ((self.data['出版社']==publisher)|(self.data['出版社'].isna())) & ((self.data['件名標目']==subject)|(self.data['件名標目'].isna()))].index)[0]
 
     def change_table_element(self, index, table_list):
         self.data.iloc[index]=table_list
@@ -305,8 +306,9 @@ class change_data(tk.Frame):
         self.button.grid(row=6, column=2, pady = 5, padx = 5, sticky=tk.EW)
 
     def change_table_element(self):
-        table_list = [self.str_isbn.get(), self.str_title.get(), self.str_creator.get(), self.str_publisher.get(), self.str_subject.get()]
+        table_list = [self.str_isbn.get(), self.str_title.get(), self.str_creator.get(), self.str_publisher.get(), self.str_subject.get(), self.str_place.get()]
         self.data.iloc[self.index]=table_list
+        self.data.to_csv('book_data.csv', encoding="utf-8", index=False)
         self.del_func()
 
 class input_isbn(tk.Frame):
@@ -336,48 +338,67 @@ class input_isbn(tk.Frame):
                 ret_info = messagebox.askyesno('追加確認', '追加しますか？\nISBN : '+isbn+'\nタイトル : '+title+'\n著者 : '+creator+'\n出版社 : '+publisher+'\n件名標目 : '+subject)
                 if ret_info:
                     self.data = self.data.append({'isbn': isbn, 'タイトル': title, '著者': creator, '出版社': publisher, '件名標目': subject}, ignore_index=True)
-                    self.data.to_pickle('book_data.pkl')
+                    self.data.to_csv('book_data.csv', encoding="utf-8", index=False)
                     self.search_str_isbn.set('')
             else:
                 messagebox.showerror('登録失敗', '入力されたISBNコードと一致する本が存在ません。')
         else:
             messagebox.showerror('登録失敗', 'この本は既に登録されています。')
-        
-    def fetch_book_data(self, isbn):
+    
+    def list_to_text(self, in_list):
+        return_text = ''
+        for i in in_list:
+            return_text += str(i) + ', '
+        return return_text[:-2]
+
+    def xml_to_list_text(self, xml_data, key):
+        ns = {'dc': 'http://purl.org/dc/elements/1.1/'}
+        try:
+            return_list = []
+            for i in xml_data.findall(key, ns):
+                if not(i.text in return_list):
+                    return_list.append(i.text)
+            return self.list_to_text(return_list)
+        except: return ''
+
+    def fetch_author_data_openlibrary(self, key):
+        endpoint = 'https://openlibrary.org' + str(key) + '.json'
+        res = requests.get(endpoint)
+        res_json = json.loads(res.text)
+        return res_json['name']
+
+    def fetch_book_data_openlibrary(self, isbn):
+        endpoint = 'https://openlibrary.org/isbn/' + str(isbn) + '.json'
+        res = requests.get(endpoint)
+        res_json = json.loads(res.text)
+        author_list = []
+        for key in res_json['authors']:
+            author_list.append(self.fetch_author_data_openlibrary(key['key']))
+        return isbn, res_json['title'], self.list_to_text(author_list), self.list_to_text(res_json['publishers']), self.list_to_text(res_json['subjects'])
+
+    def fetch_book_data_NDL(self, isbn):
         endpoint = 'https://iss.ndl.go.jp/api/sru'
         params = {'operation': 'searchRetrieve',
                 'query': f'isbn="{isbn}"',
                 'recordPacking': 'xml'}
-
         res = requests.get(endpoint, params=params)
-        
         root = et.fromstring(res.text)
         ns = {'dc': 'http://purl.org/dc/elements/1.1/'}
         try:
             title = root.find('.//dc:title', ns).text
         except:
             title = ''
-        try:
-            creator = root.find('.//dc:creator', ns).text
-        except:
-            creator = ''
-        try:
-            publisher = root.find('.//dc:publisher', ns).text
-        except:
-            publisher = ''
-        subject_list = []
-        try:
-            for i in root.findall('.//dc:subject', ns):
-                if not(i.text in subject_list):
-                    subject_list.append(i.text)
-            subject = ''
-            for i in subject_list:
-                subject += i + ', '
-            subject = subject[:-2]
-        except:
-            subject = ''
-        
+        creator = self.xml_to_list_text(root, './/dc:creator')
+        publisher = self.xml_to_list_text(root, './/dc:publisher')
+        subject = self.xml_to_list_text(root, './/dc:subject')
+        return isbn, title, creator, publisher, subject
 
+    def fetch_book_data(self, isbn):
+        _, title, creator, publisher, subject = self.fetch_book_data_NDL(isbn)
+        if title=='':
+            try:
+                _, title, creator, publisher, subject = self.fetch_book_data_openlibrary(isbn)
+            except: pass
         return isbn, title, creator, publisher, subject
     
 if __name__ == "__main__":
