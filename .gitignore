@@ -2,6 +2,7 @@
 main.build/**
 main.dist/**
 main.onefile-build/**
+release/**
 main.exe
 cmmand.txt
 book_data.csv

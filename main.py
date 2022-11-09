@@ -118,7 +118,7 @@ class Application(tk.Frame):
         if self.search_str_subject.get()!='':
             bool_data = bool_data & self.data['件名標目'].str.contains(self.search_str_subject.get(), na=False)
         if self.search_str_place.get()!='':
-            bool_data = bool_data & self.data['件名標目'].str.contains(self.search_str_place.get(), na=False)
+            bool_data = bool_data & self.data['保管場所'].str.contains(self.search_str_place.get(), na=False)
         result = self.data[bool_data]
         self.update_table_by_search_result(result)
 
